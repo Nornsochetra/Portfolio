@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Norn Sochetra — Portfolio</title>
+<script src="tailwind.js"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+        },
+        colors: {
+          accent: {
+            DEFAULT: '#6366f1',
+            light: '#818cf8',
+          },
+        },
+        animation: {
+          'fade-in': 'fadeIn 0.8s ease-out forwards',
+          'float': 'float 6s ease-in-out infinite',
+        },
+        keyframes: {
+          fadeIn: {
+            '0%': { opacity: 0, transform: 'translateY(16px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' },
+          },
+          float: {
+            '0%, 100%': { transform: 'translateY(0px)' },
+            '50%': { transform: 'translateY(-14px)' },
+          },
+        },
+      },
+    },
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  .glass {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .glow {
+    background: radial-gradient(circle at center, rgba(99,102,241,0.35), transparent 70%);
+  }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #0b0b12; }
+  ::-webkit-scrollbar-thumb { background: #4338ca; border-radius: 8px; }
+</style>
+</head>
+<body class="bg-[#0b0b12] text-slate-200 antialiased">
+<div id="root"></div>
+
+<script src="react.production.min.js"></script>
+<script src="react-dom.production.min.js"></script>
+<script src="babel.min.js"></script>
+<script src="lucide.min.js"></script>
+
+<script type="text/x-app-jsx" id="app-source">
+
+const { useState, useEffect, useRef } = React;
+const e = React.createElement;
+
+// ---------- Content ----------
+
+const PORTFOLIO_CONFIG = {
+  name: "Norn Sochetra",
+  initials: "NS",
+  role: "Software Engineer",
+  location: "Cambodia",
+  email: "nornsochetra@gmail.com",
+  tagline: "Building clean, fast digital products",
+  intro: "I'm Norn Sochetra, a full-stack software engineer building web and mobile products end to end — from React/Next.js interfaces to Spring Boot backends.",
+  about: [
+    "I'm a full-stack software engineer at KOSIGN (Cambodia), working across the stack from React/Next.js and Tailwind CSS on the frontend to Spring Boot, Java, and PostgreSQL on the backend, with SwiftUI/Swift for mobile.",
+    "Since joining in February 2026, I've helped build and ship WeMeet and KOSIGN DRM end to end into production.",
+  ],
+  stats: [
+    { value: "2026", label: "Started at KOSIGN" },
+    { value: "2", label: "Apps in production" },
+    { value: "1", label: "Company" },
+  ],
+  nav: [
+    { id: "home", label: "Home" },
+    { id: "about", label: "About" },
+    { id: "skills", label: "Skills" },
+    { id: "projects", label: "Projects" },
+    { id: "experience", label: "Experience" },
+    { id: "contact", label: "Contact" },
+  ],
+  socials: [
+    { label: "GitHub", brand: "github", href: "https://github.com/Nornsochetra" },
+    { label: "Facebook", brand: "facebook", href: "https://www.facebook.com/share/1F1FY1pEY6/?mibextid=wwXIfr" },
+  ],
+};
+
+const SKILLS = [
+  { name: "React / Next.js", level: 80 },
+  { name: "Tailwind CSS", level: 90 },
+  { name: "SwiftUI", level: 80 },
+  { name: "Swift", level: 80 },
+  { name: "Spring Boot", level: 85 },
+  { name: "Java", level: 85 },
+  { name: "PostgreSQL", level: 85 },
+];
+
+const PROJECTS = [
+  {
+    title: "WeMeet",
+    desc: "Meeting room booking system with passwordless, email one-time-code login. Built full-stack end to end and shipped to production.",
+    tags: ["Next.js", "Tailwind CSS", "Spring Boot", "PostgreSQL"],
+    color: "from-cyan-500 to-blue-500",
+    href: "https://www.kosign.com.kh/wemeet/login",
+  },
+  {
+    title: "KOSIGN DRM",
+    desc: "Internal developer resource management system used to track developer staffing and project assignments. Built full-stack end to end and shipped to production.",
+    tags: ["Next.js", "Tailwind CSS", "Spring Boot", "PostgreSQL"],
+    color: "from-indigo-500 to-purple-500",
+    href: "https://www.kosign.com.kh/drm/login",
+  },
+];
+
+const EXPERIENCE = [
+  {
+    role: "Software Engineer",
+    company: "KOSIGN (Cambodia)",
+    period: "Feb 2026 — Present",
+    desc: "Full-stack engineer building production web apps end to end — React/Next.js + Tailwind CSS on the frontend, Spring Boot + Java + PostgreSQL on the backend. Shipped WeMeet and KOSIGN DRM to production.",
+  },
+];
+
+// ---------- Icons ----------
+
+// Renders a lucide icon by name from the vendored lucide.icons node data
+// (the same [tag, attrs] shape lucide-react turns into components) —
+// no bundler/npm dependency needed. Usage: <Icon name="Menu" />
+function Icon({ name, size = 20, strokeWidth = 2, className = '' }) {
+  const node = window.lucide && window.lucide.icons[name];
+  if (!node) return null;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {node.map((child, i) => e(child[0], { key: i, ...child[1] }))}
+    </svg>
+  );
+}
+
+// Lucide dropped brand/social logos, so these are hand-added path data
+// (standard monochrome logo marks) for the footer social links.
+const BRAND_PATHS = {
+  github:
+    "M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.93.57.1.78-.25.78-.55 0-.27-.01-1-.02-1.96-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.04-.72.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.75 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 015.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.24 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.4-5.27 5.69.42.36.78 1.08.78 2.18 0 1.57-.02 2.84-.02 3.23 0 .3.2.66.79.55A10.52 10.52 0 0023.5 12C23.5 5.65 18.35.5 12 .5z",
+  facebook:
+    "M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.99 3.66 9.13 8.44 9.88v-6.99h-2.54V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99C18.34 21.13 22 16.99 22 12z",
+};
+
+function BrandIcon({ brand, size = 20, className = '' }) {
+  const path = BRAND_PATHS[brand];
+  if (!path) return null;
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d={path} />
+    </svg>
+  );
+}
+
+// ---------- Hooks ----------
+
+function useActiveSection(ids) {
+  const [active, setActive] = useState(ids[0]);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: '-40% 0px -55% 0px' }
+    );
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
+
+function useReveal() {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return [ref, visible];
+}
+
+function Reveal({ children, className = '', delay = 0 }) {
+  const [ref, visible] = useReveal();
+  return (
+    <div
+      ref={ref}
+      className={className + ' transition-all duration-700 ease-out ' + (visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8')}
+      style={{ transitionDelay: delay + 'ms' }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ---------- Sections ----------
+
+function Nav() {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const active = useActiveSection(PORTFOLIO_CONFIG.nav.map((l) => l.id));
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <header className={"fixed top-0 inset-x-0 z-50 transition-all duration-300 " + (scrolled ? 'py-3 glass' : 'py-6 bg-transparent')}>
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+        <a href="#home" className="text-lg font-extrabold tracking-tight text-white">
+          {PORTFOLIO_CONFIG.name.split(' ').slice(-1)[0]}<span className="text-accent-light">.</span>
+        </a>
+        <nav className="hidden md:flex items-center gap-8">
+          {PORTFOLIO_CONFIG.nav.map((link) => (
+            <a
+              key={link.id}
+              href={"#" + link.id}
+              className={"text-sm font-medium transition-colors " + (active === link.id ? 'text-white' : 'text-slate-400 hover:text-white')}
+            >
+              {link.label}
+            </a>
+          ))}
+          <a
+            href="#contact"
+            className="text-sm font-semibold px-4 py-2 rounded-full bg-accent hover:bg-accent-light transition-colors text-white"
+          >
+            Let's talk
+          </a>
+        </nav>
+        <button
+          className="md:hidden text-slate-200"
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle menu"
+        >
+          <Icon name={open ? 'X' : 'Menu'} size={28} />
+        </button>
+      </div>
+      {open && (
+        <div className="md:hidden mt-4 px-6 flex flex-col gap-4 pb-4">
+          {PORTFOLIO_CONFIG.nav.map((link) => (
+            <a
+              key={link.id}
+              href={"#" + link.id}
+              onClick={() => setOpen(false)}
+              className="text-slate-300 hover:text-white text-sm font-medium"
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </header>
+  );
+}
+
+function Hero() {
+  return (
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+      <div className="absolute -top-32 -left-32 w-96 h-96 glow rounded-full animate-float"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 glow rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="relative max-w-4xl mx-auto text-center animate-fade-in">
+        <p className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-slate-300 mb-6">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Available for new projects
+        </p>
+        <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white leading-tight">
+          {PORTFOLIO_CONFIG.tagline.split(',')[0]}, <br />
+          <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            {PORTFOLIO_CONFIG.tagline.split(',')[1]}
+          </span>
+        </h1>
+        <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">{PORTFOLIO_CONFIG.intro}</p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <a href="#projects" className="px-6 py-3 rounded-full bg-accent hover:bg-accent-light transition-colors text-white font-semibold shadow-lg shadow-accent/30">
+            View my work
+          </a>
+          <a href="#contact" className="px-6 py-3 rounded-full glass hover:bg-white/10 transition-colors text-white font-semibold">
+            Get in touch
+          </a>
+        </div>
+      </div>
+      <a href="#about" className="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-500 animate-bounce">
+        <Icon name="ArrowDown" size={24} />
+      </a>
+    </section>
+  );
+}
+
+function SectionHeading({ eyebrow, title, subtitle }) {
+  return (
+    <Reveal className="text-center max-w-2xl mx-auto mb-14">
+      <p className="text-accent-light text-sm font-semibold tracking-widest uppercase mb-3">{eyebrow}</p>
+      <h2 className="text-4xl font-extrabold text-white">{title}</h2>
+      {subtitle && <p className="mt-4 text-slate-400">{subtitle}</p>}
+    </Reveal>
+  );
+}
+
+function About() {
+  return (
+    <section id="about" className="py-28 px-6">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <Reveal>
+          <div className="relative w-full max-w-sm mx-auto">
+            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500/30 to-pink-500/30 rounded-3xl blur-2xl"></div>
+            <div className="relative rounded-3xl overflow-hidden glass aspect-[4/5] flex items-center justify-center">
+              <span className="text-8xl font-black text-white/10">{PORTFOLIO_CONFIG.initials}</span>
+            </div>
+          </div>
+        </Reveal>
+        <div>
+          <Reveal>
+            <p className="text-accent-light text-sm font-semibold tracking-widest uppercase mb-3">About me</p>
+            <h2 className="text-4xl font-extrabold text-white mb-6">
+              Turning ideas into interfaces people love
+            </h2>
+            {PORTFOLIO_CONFIG.about.map((p, i) => (
+              <p key={i} className="text-slate-400 leading-relaxed mb-4 last:mb-0">{p}</p>
+            ))}
+          </Reveal>
+          <Reveal delay={150} className="grid grid-cols-3 gap-6 mt-10">
+            {PORTFOLIO_CONFIG.stats.map((s) => (
+              <div key={s.label} className="text-center md:text-left">
+                <p className="text-3xl font-extrabold text-white">{s.value}</p>
+                <p className="text-sm text-slate-500 mt-1">{s.label}</p>
+              </div>
+            ))}
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Skills() {
+  return (
+    <section id="skills" className="py-28 px-6 bg-white/[0.02]">
+      <div className="max-w-4xl mx-auto">
+        <SectionHeading
+          eyebrow="Skills"
+          title="What I work with"
+          subtitle="A toolkit refined over years of building production interfaces."
+        />
+        <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
+          {SKILLS.map((skill, i) => (
+            <Reveal key={skill.name} delay={i * 80}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-slate-200">{skill.name}</span>
+                <span className="text-sm text-slate-500">{skill.level}%</span>
+              </div>
+              <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-1000"
+                  style={{ width: skill.level + '%' }}
+                ></div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Projects() {
+  return (
+    <section id="projects" className="py-28 px-6">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading
+          eyebrow="Portfolio"
+          title="Selected projects"
+          subtitle="A few things I've designed, built, and shipped recently."
+        />
+        <div className="grid sm:grid-cols-2 gap-8">
+          {PROJECTS.map((p, i) => (
+            <Reveal key={p.title} delay={i * 100}>
+              <div className="group relative rounded-3xl glass p-8 h-full overflow-hidden hover:-translate-y-1 transition-transform duration-300">
+                <div className={"absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gradient-to-br " + p.color + " opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"}></div>
+                <div className="relative">
+                  <div className="flex items-start justify-between mb-6">
+                    <div className={"w-12 h-12 rounded-xl bg-gradient-to-br " + p.color + " flex items-center justify-center text-white font-bold"}>
+                      {p.title.charAt(0)}
+                    </div>
+                    {p.href && (
+                      <a
+                        href={p.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={"Visit " + p.title}
+                        className="text-slate-500 hover:text-white transition-colors"
+                      >
+                        <Icon name="ArrowUpRight" size={20} />
+                      </a>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{p.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-6">{p.desc}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {p.tags.map((t) => (
+                      <span key={t} className="text-xs font-medium px-3 py-1 rounded-full bg-white/5 text-slate-300">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Experience() {
+  return (
+    <section id="experience" className="py-28 px-6 bg-white/[0.02]">
+      <div className="max-w-3xl mx-auto">
+        <SectionHeading eyebrow="Career" title="Where I've worked" />
+        <div className="relative border-l border-white/10 ml-3">
+          {EXPERIENCE.map((job, i) => (
+            <Reveal key={job.role + job.company} delay={i * 120} className="relative pl-10 pb-12 last:pb-0">
+              <span className="absolute left-0 top-1 -translate-x-1/2 w-4 h-4 rounded-full bg-accent ring-4 ring-[#0b0b12]"></span>
+              <p className="text-sm text-accent-light font-semibold mb-1">{job.period}</p>
+              <h3 className="text-lg font-bold text-white">{job.role} · {job.company}</h3>
+              <p className="text-slate-400 mt-2 text-sm leading-relaxed">{job.desc}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Contact() {
+  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSent(true);
+  };
+
+  return (
+    <section id="contact" className="py-28 px-6">
+      <div className="max-w-3xl mx-auto">
+        <SectionHeading
+          eyebrow="Contact"
+          title="Let's build something great"
+          subtitle="Have a project in mind? Send a message and I'll get back to you within a day."
+        />
+        <Reveal>
+          {sent ? (
+            <div className="glass rounded-2xl p-10 text-center">
+              <p className="text-2xl font-bold text-white mb-2">Thanks, {form.name || 'friend'}!</p>
+              <p className="text-slate-400">This is a prototype, so nothing was actually sent — but in production this form would reach my inbox.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="glass rounded-2xl p-8 sm:p-10 space-y-6">
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Name</label>
+                  <input
+                    required
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Jane Doe"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                  <input
+                    required
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="jane@example.com"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Message</label>
+                <textarea
+                  required
+                  rows="5"
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                  placeholder="Tell me about your project..."
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-accent hover:bg-accent-light transition-colors text-white font-semibold shadow-lg shadow-accent/30"
+              >
+                <Icon name="Send" size={18} />
+                Send message
+              </button>
+            </form>
+          )}
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-white/5 py-10 px-6">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+        <p className="text-slate-500 text-sm">© 2026 {PORTFOLIO_CONFIG.name}. All rights reserved.</p>
+        <div className="flex gap-5">
+          {PORTFOLIO_CONFIG.socials.map((s) => (
+            <a key={s.label} href={s.href} aria-label={s.label} className="text-slate-400 hover:text-white transition-colors">
+              <BrandIcon brand={s.brand} size={20} />
+            </a>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function App() {
+  return (
+    <div>
+      <Nav />
+      <Hero />
+      <About />
+      <Skills />
+      <Projects />
+      <Experience />
+      <Contact />
+      <Footer />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<script>
+  // Manually transform + run the JSX above using the classic runtime
+  // (React.createElement calls) instead of Babel's default automatic
+  // runtime, which would try to `import` react/jsx-runtime — unavailable
+  // without a bundler and would silently fail (blank page).
+  var source = document.getElementById('app-source').textContent;
+  var output = Babel.transform(source, { presets: [['react', { runtime: 'classic' }]] }).code;
+  (0, eval)(output);
+</script>
+</body>
+</html>
