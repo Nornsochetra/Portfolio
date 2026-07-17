@@ -32,15 +32,21 @@ export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const active = useActiveSection(PORTFOLIO_CONFIG.nav.map((l) => l.id));
 
+  // Close the mobile menu when the active section changes (e.g. from scrolling).
+  // Adjusted during render (React's recommended pattern for resetting state in
+  // response to another value changing) rather than in a useEffect, which would
+  // cause an extra render pass.
+  const [prevActive, setPrevActive] = useState(active);
+  if (active !== prevActive) {
+    setPrevActive(active);
+    setOpen(false);
+  }
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [active]);
 
   return (
     <header
