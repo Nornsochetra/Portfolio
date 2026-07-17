@@ -4,6 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Norn Sochetra — Portfolio</title>
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (err) {}
+  })();
+</script>
 <script src="tailwind.js"></script>
 <script>
   tailwind.config = {
@@ -22,6 +32,12 @@
         animation: {
           'fade-in': 'fadeIn 0.8s ease-out forwards',
           'float': 'float 6s ease-in-out infinite',
+          'float-slow': 'float 9s ease-in-out infinite',
+          'gradient-x': 'gradientX 6s ease infinite',
+          'shimmer': 'shimmer 2s linear infinite',
+          'spin-slow': 'spin 12s linear infinite',
+          'wiggle': 'wiggle 0.6s ease-in-out infinite',
+          'pop-in': 'popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards',
         },
         keyframes: {
           fadeIn: {
@@ -31,6 +47,22 @@
           float: {
             '0%, 100%': { transform: 'translateY(0px)' },
             '50%': { transform: 'translateY(-14px)' },
+          },
+          gradientX: {
+            '0%, 100%': { backgroundPosition: '0% 50%' },
+            '50%': { backgroundPosition: '100% 50%' },
+          },
+          shimmer: {
+            '0%': { backgroundPosition: '-200% 0' },
+            '100%': { backgroundPosition: '200% 0' },
+          },
+          wiggle: {
+            '0%, 100%': { transform: 'rotate(-3deg)' },
+            '50%': { transform: 'rotate(3deg)' },
+          },
+          popIn: {
+            '0%': { opacity: 0, transform: 'scale(0.85)' },
+            '100%': { opacity: 1, transform: 'scale(1)' },
           },
         },
       },
@@ -42,21 +74,48 @@
 <style>
   html { scroll-behavior: smooth; }
   body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+
+  :root {
+    --ink: 15, 23, 42;
+    --glass-alpha: 0.045;
+    --glass-border-alpha: 0.08;
+    --glow-alpha: 0.22;
+    --scrollbar-track: #f1f5f9;
+    --scrollbar-thumb: #818cf8;
+  }
+  .dark {
+    --ink: 255, 255, 255;
+    --glass-alpha: 0.06;
+    --glass-border-alpha: 0.1;
+    --glow-alpha: 0.35;
+    --scrollbar-track: #0b0b12;
+    --scrollbar-thumb: #4338ca;
+  }
+
+  body { transition: background-color 0.3s ease, color 0.3s ease; }
   .glass {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(var(--ink), var(--glass-alpha));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(var(--ink), var(--glass-border-alpha));
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
   .glow {
-    background: radial-gradient(circle at center, rgba(99,102,241,0.35), transparent 70%);
+    background: radial-gradient(circle at center, rgba(99,102,241,var(--glow-alpha)), transparent 70%);
+  }
+  .gradient-text-animated {
+    background-size: 200% auto;
+  }
+  .shimmer-bar {
+    background-image: linear-gradient(90deg, transparent, rgba(var(--ink),0.35), transparent);
+    background-size: 200% 100%;
   }
   ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: #0b0b12; }
-  ::-webkit-scrollbar-thumb { background: #4338ca; border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 8px; }
 </style>
 </head>
-<body class="bg-[#0b0b12] text-slate-200 antialiased">
+<body class="bg-white dark:bg-[#0b0b12] text-slate-700 dark:text-slate-200 antialiased">
 <div id="root"></div>
 
 <script src="react.production.min.js"></script>
@@ -226,6 +285,60 @@ function useReveal() {
   return [ref, visible];
 }
 
+function useTheme() {
+  const [theme, setTheme] = useState(() => document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('theme', theme); } catch (err) {}
+  }, [theme]);
+
+  const toggle = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+  return [theme, toggle];
+}
+
+function ThemeToggle({ theme, onToggle, className = '' }) {
+  const isDark = theme === 'dark';
+  return (
+    <button
+      onClick={onToggle}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className={"relative w-10 h-10 flex items-center justify-center rounded-full text-slate-700 dark:text-slate-200 hover:bg-slate-900/10 dark:hover:bg-white/10 active:scale-90 transition-all duration-200 " + className}
+    >
+      <span className={"absolute transition-all duration-500 " + (isDark ? 'opacity-0 -rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100')}>
+        <Icon name="Sun" size={20} />
+      </span>
+      <span className={"absolute transition-all duration-500 " + (isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50')}>
+        <Icon name="Moon" size={20} />
+      </span>
+    </button>
+  );
+}
+
+function CountUp({ value, duration = 1600 }) {
+  const [ref, visible] = useReveal();
+  const target = parseInt(String(value).replace(/[^0-9]/g, ''), 10) || 0;
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    if (!visible) return;
+    let raf;
+    let start = null;
+    const step = (ts) => {
+      if (start === null) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(eased * target));
+      if (progress < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [visible, target, duration]);
+
+  return <span ref={ref} className="tabular-nums">{display}</span>;
+}
+
 function Reveal({ children, className = '', delay = 0 }) {
   const [ref, visible] = useReveal();
   return (
@@ -245,6 +358,7 @@ function Nav() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const active = useActiveSection(PORTFOLIO_CONFIG.nav.map((l) => l.id));
+  const [theme, toggleTheme] = useTheme();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -252,51 +366,83 @@ function Nav() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [active]);
+
   return (
-    <header className={"fixed top-0 inset-x-0 z-50 transition-all duration-300 " + (scrolled ? 'py-3 glass' : 'py-6 bg-transparent')}>
-      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-        <a href="#home" className="text-lg font-extrabold tracking-tight text-white">
-          {PORTFOLIO_CONFIG.name.split(' ').slice(-1)[0]}<span className="text-accent-light">.</span>
-        </a>
-        <nav className="hidden md:flex items-center gap-8">
-          {PORTFOLIO_CONFIG.nav.map((link) => (
-            <a
-              key={link.id}
-              href={"#" + link.id}
-              className={"text-sm font-medium transition-colors " + (active === link.id ? 'text-white' : 'text-slate-400 hover:text-white')}
-            >
-              {link.label}
-            </a>
-          ))}
-          <a
-            href="#contact"
-            className="text-sm font-semibold px-4 py-2 rounded-full bg-accent hover:bg-accent-light transition-colors text-white"
-          >
-            Let's talk
+    <header className={"fixed top-0 inset-x-0 z-50 transition-all duration-300 " + (scrolled ? 'py-3' : 'py-5')}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className={"flex items-center justify-between rounded-2xl sm:rounded-full pl-3 pr-2 sm:pl-4 sm:pr-2.5 py-2 transition-all duration-300 border " + (scrolled ? 'glass shadow-xl shadow-slate-900/10 dark:shadow-black/30 border-slate-900/10 dark:border-white/10' : 'bg-transparent border-transparent')}>
+          <a href="#home" className="flex items-center gap-2.5 group">
+            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-xs font-extrabold shadow-lg shadow-accent/30 group-hover:scale-105 transition-transform">
+              {PORTFOLIO_CONFIG.initials}
+            </span>
+            <span className="hidden sm:block text-sm font-bold tracking-tight text-slate-900 dark:text-white">
+              {PORTFOLIO_CONFIG.name.split(' ').slice(-1)[0]}<span className="text-accent-light">.</span>
+            </span>
           </a>
-        </nav>
-        <button
-          className="md:hidden text-slate-200"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          <Icon name={open ? 'X' : 'Menu'} size={28} />
-        </button>
-      </div>
-      {open && (
-        <div className="md:hidden mt-4 px-6 flex flex-col gap-4 pb-4">
-          {PORTFOLIO_CONFIG.nav.map((link) => (
+
+          <nav className="hidden md:flex items-center gap-1 rounded-full border border-slate-900/10 dark:border-white/10 bg-slate-900/[0.03] dark:bg-white/[0.03] p-1">
+            {PORTFOLIO_CONFIG.nav.map((link) => (
+              <a
+                key={link.id}
+                href={"#" + link.id}
+                className={"relative text-sm font-medium px-4 py-1.5 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 " + (active === link.id ? 'text-slate-900 dark:text-white bg-slate-900/10 dark:bg-white/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white')}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-1">
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <a
-              key={link.id}
-              href={"#" + link.id}
-              onClick={() => setOpen(false)}
-              className="text-slate-300 hover:text-white text-sm font-medium"
+              href="#contact"
+              className="group hidden md:inline-flex items-center gap-1.5 text-sm font-semibold pl-4 pr-3 py-2 ml-1 rounded-full bg-accent hover:bg-accent-light transition-all duration-300 text-white hover:scale-105 hover:shadow-lg hover:shadow-accent/40 active:scale-95"
             >
-              {link.label}
+              Let's talk
+              <Icon name="ArrowUpRight" size={15} className="transition-transform duration-300 group-hover:rotate-45" />
             </a>
-          ))}
+            <button
+              className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-full text-slate-700 dark:text-slate-200 hover:bg-slate-900/10 dark:hover:bg-white/10 active:scale-90 transition-all duration-200"
+              onClick={() => setOpen(!open)}
+              aria-label="Toggle menu"
+              aria-expanded={open}
+            >
+              <span className={"transition-transform duration-300 " + (open ? 'rotate-90' : 'rotate-0')}>
+                <Icon name={open ? 'X' : 'Menu'} size={22} />
+              </span>
+            </button>
+          </div>
         </div>
-      )}
+
+        <div
+          className={"md:hidden overflow-hidden transition-all duration-300 ease-out " + (open ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0')}
+        >
+          <nav className="glass rounded-2xl border border-slate-900/10 dark:border-white/10 p-2 flex flex-col gap-1">
+            {PORTFOLIO_CONFIG.nav.map((link) => (
+              <a
+                key={link.id}
+                href={"#" + link.id}
+                onClick={() => setOpen(false)}
+                className={"flex items-center justify-between text-sm font-medium px-4 py-3 rounded-xl transition-colors " + (active === link.id ? 'text-slate-900 dark:text-white bg-slate-900/10 dark:bg-white/10' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/5 dark:hover:bg-white/5')}
+              >
+                {link.label}
+                {active === link.id && <span className="w-1.5 h-1.5 rounded-full bg-accent-light"></span>}
+              </a>
+            ))}
+            <a
+              href="#contact"
+              onClick={() => setOpen(false)}
+              className="mt-1 flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-3 rounded-xl bg-accent hover:bg-accent-light transition-colors text-white"
+            >
+              Let's talk
+              <Icon name="ArrowUpRight" size={15} />
+            </a>
+          </nav>
+        </div>
+      </div>
     </header>
   );
 }
@@ -306,28 +452,36 @@ function Hero() {
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
       <div className="absolute -top-32 -left-32 w-96 h-96 glow rounded-full animate-float"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 glow rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/3 right-1/4 w-64 h-64 glow rounded-full animate-float-slow opacity-60" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute top-24 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-indigo-400/60 animate-ping"></div>
+      <div className="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 rounded-full bg-purple-400/60 animate-ping" style={{ animationDelay: '1.2s' }}></div>
       <div className="relative max-w-4xl mx-auto text-center animate-fade-in">
-        <p className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-slate-300 mb-6">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <p className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-slate-600 dark:text-slate-300 mb-6 animate-pop-in hover:scale-105 transition-transform">
+          <span className="relative flex w-2 h-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 animate-ping"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+          </span>
           Available for new projects
         </p>
-        <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white leading-tight">
+        <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
           {PORTFOLIO_CONFIG.tagline.split(',')[0]}, <br />
-          <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <span className="gradient-text-animated animate-gradient-x bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             {PORTFOLIO_CONFIG.tagline.split(',')[1]}
           </span>
         </h1>
-        <p className="mt-6 text-lg text-slate-400 max-w-2xl mx-auto">{PORTFOLIO_CONFIG.intro}</p>
+        <p className="mt-6 text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">{PORTFOLIO_CONFIG.intro}</p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <a href="#projects" className="px-6 py-3 rounded-full bg-accent hover:bg-accent-light transition-colors text-white font-semibold shadow-lg shadow-accent/30">
+          <a href="#projects" className="group px-6 py-3 rounded-full bg-accent hover:bg-accent-light transition-all duration-300 text-white font-semibold shadow-lg shadow-accent/30 hover:shadow-accent/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 inline-flex items-center gap-2">
             View my work
+            <Icon name="ArrowRight" size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
           </a>
-          <a href="#contact" className="px-6 py-3 rounded-full glass hover:bg-white/10 transition-colors text-white font-semibold">
+          <a href="#contact" className="group px-6 py-3 rounded-full glass hover:bg-slate-900/10 dark:hover:bg-white/10 transition-all duration-300 text-slate-900 dark:text-white font-semibold hover:-translate-y-0.5 active:translate-y-0 active:scale-95 inline-flex items-center gap-2">
             Get in touch
+            <Icon name="ArrowUpRight" size={16} className="transition-transform duration-300 group-hover:rotate-45" />
           </a>
         </div>
       </div>
-      <a href="#about" className="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-500 animate-bounce">
+      <a href="#about" className="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors animate-bounce">
         <Icon name="ArrowDown" size={24} />
       </a>
     </section>
@@ -338,8 +492,9 @@ function SectionHeading({ eyebrow, title, subtitle }) {
   return (
     <Reveal className="text-center max-w-2xl mx-auto mb-14">
       <p className="text-accent-light text-sm font-semibold tracking-widest uppercase mb-3">{eyebrow}</p>
-      <h2 className="text-4xl font-extrabold text-white">{title}</h2>
-      {subtitle && <p className="mt-4 text-slate-400">{subtitle}</p>}
+      <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white">{title}</h2>
+      <span className="block w-12 h-1 mx-auto mt-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 origin-center animate-pop-in" style={{ animationDelay: '200ms' }}></span>
+      {subtitle && <p className="mt-4 text-slate-500 dark:text-slate-400">{subtitle}</p>}
     </Reveal>
   );
 }
@@ -349,28 +504,28 @@ function About() {
     <section id="about" className="py-28 px-6">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
         <Reveal>
-          <div className="relative w-full max-w-sm mx-auto">
-            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500/30 to-pink-500/30 rounded-3xl blur-2xl"></div>
-            <div className="relative rounded-3xl overflow-hidden glass aspect-[4/5] flex items-center justify-center">
-              <span className="text-8xl font-black text-white/10">{PORTFOLIO_CONFIG.initials}</span>
+          <div className="group relative w-full max-w-sm mx-auto">
+            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500/30 to-pink-500/30 rounded-3xl blur-2xl animate-float-slow"></div>
+            <div className="relative rounded-3xl overflow-hidden glass aspect-[4/5] flex items-center justify-center transition-transform duration-500 group-hover:-translate-y-1">
+              <span className="text-8xl font-black text-slate-900/10 dark:text-white/10 transition-transform duration-500 group-hover:scale-110">{PORTFOLIO_CONFIG.initials}</span>
             </div>
           </div>
         </Reveal>
         <div>
           <Reveal>
             <p className="text-accent-light text-sm font-semibold tracking-widest uppercase mb-3">About me</p>
-            <h2 className="text-4xl font-extrabold text-white mb-6">
+            <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-6">
               Turning ideas into interfaces people love
             </h2>
             {PORTFOLIO_CONFIG.about.map((p, i) => (
-              <p key={i} className="text-slate-400 leading-relaxed mb-4 last:mb-0">{p}</p>
+              <p key={i} className="text-slate-500 dark:text-slate-400 leading-relaxed mb-4 last:mb-0">{p}</p>
             ))}
           </Reveal>
           <Reveal delay={150} className="grid grid-cols-3 gap-6 mt-10">
             {PORTFOLIO_CONFIG.stats.map((s) => (
-              <div key={s.label} className="text-center md:text-left">
-                <p className="text-3xl font-extrabold text-white">{s.value}</p>
-                <p className="text-sm text-slate-500 mt-1">{s.label}</p>
+              <div key={s.label} className="text-center md:text-left transition-transform duration-300 hover:-translate-y-1 cursor-default">
+                <p className="text-3xl font-extrabold text-slate-900 dark:text-white"><CountUp value={s.value} /></p>
+                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">{s.label}</p>
               </div>
             ))}
           </Reveal>
@@ -380,9 +535,35 @@ function About() {
   );
 }
 
+function SkillBar({ skill, delay }) {
+  const [ref, visible] = useReveal();
+  return (
+    <div
+      ref={ref}
+      className={"transition-all duration-700 ease-out " + (visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8')}
+      style={{ transitionDelay: delay + 'ms' }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{skill.name}</span>
+        <span className={"text-sm text-slate-400 dark:text-slate-500 transition-all duration-500 " + (visible ? 'opacity-100' : 'opacity-0')} style={{ transitionDelay: (delay + 500) + 'ms' }}>
+          {skill.level}%
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-slate-900/5 dark:bg-white/5 overflow-hidden">
+        <div
+          className="relative h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all ease-out"
+          style={{ width: visible ? skill.level + '%' : '0%', transitionDuration: '1200ms', transitionDelay: delay + 'ms' }}
+        >
+          <div className="absolute inset-0 shimmer-bar animate-shimmer"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Skills() {
   return (
-    <section id="skills" className="py-28 px-6 bg-white/[0.02]">
+    <section id="skills" className="py-28 px-6 bg-slate-900/[0.02] dark:bg-white/[0.02]">
       <div className="max-w-4xl mx-auto">
         <SectionHeading
           eyebrow="Skills"
@@ -391,18 +572,7 @@ function Skills() {
         />
         <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
           {SKILLS.map((skill, i) => (
-            <Reveal key={skill.name} delay={i * 80}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-slate-200">{skill.name}</span>
-                <span className="text-sm text-slate-500">{skill.level}%</span>
-              </div>
-              <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-1000"
-                  style={{ width: skill.level + '%' }}
-                ></div>
-              </div>
-            </Reveal>
+            <SkillBar key={skill.name} skill={skill} delay={i * 80} />
           ))}
         </div>
       </div>
@@ -422,11 +592,13 @@ function Projects() {
         <div className="grid sm:grid-cols-2 gap-8">
           {PROJECTS.map((p, i) => (
             <Reveal key={p.title} delay={i * 100}>
-              <div className="group relative rounded-3xl glass p-8 h-full overflow-hidden hover:-translate-y-1 transition-transform duration-300">
-                <div className={"absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gradient-to-br " + p.color + " opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"}></div>
+              <div className="group relative rounded-3xl p-[1.5px] h-full overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-accent/20">
+                <div className="absolute -inset-[50%] bg-[conic-gradient(from_0deg,transparent_0%,#6366f1_12%,#a855f7_25%,#ec4899_37%,transparent_50%,transparent_100%)] animate-spin-slow opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative rounded-3xl glass bg-white/95 dark:bg-[#0f0f1a]/95 p-8 h-full overflow-hidden">
+                <div className={"absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gradient-to-br " + p.color + " opacity-20 blur-2xl group-hover:opacity-50 group-hover:scale-125 transition-all duration-500"}></div>
                 <div className="relative">
                   <div className="flex items-start justify-between mb-6">
-                    <div className={"w-12 h-12 rounded-xl bg-gradient-to-br " + p.color + " flex items-center justify-center text-white font-bold"}>
+                    <div className={"w-12 h-12 rounded-xl bg-gradient-to-br " + p.color + " flex items-center justify-center text-white font-bold transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 shadow-lg"}>
                       {p.title.charAt(0)}
                     </div>
                     {p.href && (
@@ -435,21 +607,26 @@ function Projects() {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={"Visit " + p.title}
-                        className="text-slate-500 hover:text-white transition-colors"
+                        className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all duration-300 hover:scale-125 hover:rotate-45"
                       >
                         <Icon name="ArrowUpRight" size={20} />
                       </a>
                     )}
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{p.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed mb-6">{p.desc}</p>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-300 group-hover:to-purple-300">{p.title}</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6">{p.desc}</p>
                   <div className="flex flex-wrap gap-2">
-                    {p.tags.map((t) => (
-                      <span key={t} className="text-xs font-medium px-3 py-1 rounded-full bg-white/5 text-slate-300">
+                    {p.tags.map((t, ti) => (
+                      <span
+                        key={t}
+                        className="text-xs font-medium px-3 py-1 rounded-full bg-slate-900/5 dark:bg-white/5 text-slate-600 dark:text-slate-300 transition-all duration-300 hover:bg-slate-900/10 dark:hover:bg-white/10 hover:-translate-y-0.5"
+                        style={{ transitionDelay: ti * 30 + 'ms' }}
+                      >
                         {t}
                       </span>
                     ))}
                   </div>
+                </div>
                 </div>
               </div>
             </Reveal>
@@ -462,16 +639,18 @@ function Projects() {
 
 function Experience() {
   return (
-    <section id="experience" className="py-28 px-6 bg-white/[0.02]">
+    <section id="experience" className="py-28 px-6 bg-slate-900/[0.02] dark:bg-white/[0.02]">
       <div className="max-w-3xl mx-auto">
         <SectionHeading eyebrow="Career" title="Where I've worked" />
-        <div className="relative border-l border-white/10 ml-3">
+        <div className="relative border-l border-slate-900/10 dark:border-white/10 ml-3">
           {EXPERIENCE.map((job, i) => (
-            <Reveal key={job.role + job.company} delay={i * 120} className="relative pl-10 pb-12 last:pb-0">
-              <span className="absolute left-0 top-1 -translate-x-1/2 w-4 h-4 rounded-full bg-accent ring-4 ring-[#0b0b12]"></span>
+            <Reveal key={job.role + job.company} delay={i * 120} className="group relative pl-10 pb-12 last:pb-0">
+              <span className="absolute left-0 top-1 -translate-x-1/2 w-4 h-4 rounded-full bg-accent ring-4 ring-white dark:ring-[#0b0b12] transition-transform duration-300 group-hover:scale-125">
+                <span className="absolute inset-0 rounded-full bg-accent animate-ping opacity-75"></span>
+              </span>
               <p className="text-sm text-accent-light font-semibold mb-1">{job.period}</p>
-              <h3 className="text-lg font-bold text-white">{job.role} · {job.company}</h3>
-              <p className="text-slate-400 mt-2 text-sm leading-relaxed">{job.desc}</p>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white transition-transform duration-300 group-hover:translate-x-1">{job.role} · {job.company}</h3>
+              <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm leading-relaxed">{job.desc}</p>
             </Reveal>
           ))}
         </div>
@@ -499,52 +678,55 @@ function Contact() {
         />
         <Reveal>
           {sent ? (
-            <div className="glass rounded-2xl p-10 text-center">
-              <p className="text-2xl font-bold text-white mb-2">Thanks, {form.name || 'friend'}!</p>
-              <p className="text-slate-400">This is a prototype, so nothing was actually sent — but in production this form would reach my inbox.</p>
+            <div className="glass rounded-2xl p-10 text-center animate-pop-in">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-400/10 flex items-center justify-center animate-pop-in" style={{ animationDelay: '100ms' }}>
+                <Icon name="Check" size={28} className="text-emerald-400" />
+              </div>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Thanks, {form.name || 'friend'}!</p>
+              <p className="text-slate-500 dark:text-slate-400">This is a prototype, so nothing was actually sent — but in production this form would reach my inbox.</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="glass rounded-2xl p-8 sm:p-10 space-y-6">
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Name</label>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Name</label>
                   <input
                     required
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full rounded-xl bg-slate-900/5 dark:bg-white/5 border border-slate-900/10 dark:border-white/10 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent-light focus:-translate-y-0.5"
                     placeholder="Jane Doe"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Email</label>
                   <input
                     required
                     type="email"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full rounded-xl bg-slate-900/5 dark:bg-white/5 border border-slate-900/10 dark:border-white/10 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent-light focus:-translate-y-0.5"
                     placeholder="jane@example.com"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Message</label>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Message</label>
                 <textarea
                   required
                   rows="5"
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                  className="w-full rounded-xl bg-slate-900/5 dark:bg-white/5 border border-slate-900/10 dark:border-white/10 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent-light focus:-translate-y-0.5 resize-none"
                   placeholder="Tell me about your project..."
                 ></textarea>
               </div>
               <button
                 type="submit"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-accent hover:bg-accent-light transition-colors text-white font-semibold shadow-lg shadow-accent/30"
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-accent hover:bg-accent-light transition-all duration-300 text-white font-semibold shadow-lg shadow-accent/30 hover:shadow-accent/50 hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
               >
-                <Icon name="Send" size={18} />
+                <Icon name="Send" size={18} className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5" />
                 Send message
               </button>
             </form>
@@ -557,12 +739,12 @@ function Contact() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/5 py-10 px-6">
+    <footer className="border-t border-slate-900/5 dark:border-white/5 py-10 px-6">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-        <p className="text-slate-500 text-sm">© 2026 {PORTFOLIO_CONFIG.name}. All rights reserved.</p>
+        <p className="text-slate-400 dark:text-slate-500 text-sm">© 2026 {PORTFOLIO_CONFIG.name}. All rights reserved.</p>
         <div className="flex gap-5">
           {PORTFOLIO_CONFIG.socials.map((s) => (
-            <a key={s.label} href={s.href} aria-label={s.label} className="text-slate-400 hover:text-white transition-colors">
+            <a key={s.label} href={s.href} aria-label={s.label} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-300 hover:scale-125 hover:-translate-y-1">
               <BrandIcon brand={s.brand} size={20} />
             </a>
           ))}
