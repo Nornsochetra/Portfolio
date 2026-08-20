@@ -22,6 +22,7 @@ export const PORTFOLIO_CONFIG = {
     { id: "skills", label: "Skills" },
     { id: "projects", label: "Projects" },
     { id: "experience", label: "Experience" },
+    { id: "education", label: "Education" },
     { id: "contact", label: "Contact" },
   ],
   socials: [
@@ -44,7 +45,16 @@ export const SKILLS = [
   { name: "PostgreSQL", level: 85 },
 ];
 
-export const PROJECTS = [
+export interface Project {
+  title: string;
+  desc: string;
+  tags: string[];
+  color: string;
+  /** Omit for projects with no public URL. */
+  href?: string;
+}
+
+export const PROJECTS: Project[] = [
   {
     title: "WeMeet",
     desc: "Meeting room booking system with passwordless, email one-time-code login. Built full-stack end to end and shipped to production.",
@@ -59,6 +69,12 @@ export const PROJECTS = [
     color: "from-indigo-500 to-purple-500",
     href: "https://www.kosign.com.kh/drm/login",
   },
+  {
+    title: "Record Daily Attendance",
+    desc: "Mobile attendance app for check-in/check-out plus leave, permission, and overtime requests — fast submission for staff, accurate records and smoother approval workflows for the organization. Final project for the KSHRD advanced iOS course.",
+    tags: ["SwiftUI", "Spring Boot", "JPA"],
+    color: "from-emerald-500 to-teal-500",
+  },
 ];
 
 export const EXPERIENCE = [
@@ -67,5 +83,34 @@ export const EXPERIENCE = [
     company: "KOSIGN (Cambodia)",
     period: "Feb 2026 — Present",
     desc: "Full-stack engineer building production web apps end to end — React/Next.js + Tailwind CSS on the frontend, Spring Boot + Java + PostgreSQL on the backend. Shipped WeMeet and KOSIGN DRM to production.",
+  },
+];
+
+export interface EducationEntry {
+  award: string;
+  school: string;
+  /** Omit while the exact dates are unconfirmed — the timeline hides the line. */
+  period?: string;
+  desc: string;
+}
+
+export const EDUCATION: EducationEntry[] = [
+  {
+    award: "Bachelor's Degree — Management Information Systems (MIS)",
+    school: "Setec Institute",
+    period: "2022 — Present",
+    desc: "Bachelor's program in information systems — databases, systems analysis and design, and how software supports the way an organization actually runs. The data modeling side of it carries straight into the backend work I do.",
+  },
+  {
+    award: "Advanced Course — iOS Development",
+    school: "Korea Software HRD Center (KSHRD)",
+    period: "Jul — Dec 2025",
+    desc: "Advanced specialization in native iOS at the software academy founded in Phnom Penh by KOICA and Webcash: Swift 6, SwiftUI and Foundation, Core Data and SwiftData, protocols and observers, state management, REST clients, and MVVM architecture — capped by building the Record Daily Attendance app end to end.",
+  },
+  {
+    award: "Basic Course — Full Stack Development",
+    school: "Korea Software HRD Center (KSHRD)",
+    period: "Jan — Jul 2025",
+    desc: "Full-stack foundation program covering the web front end (HTML, CSS, Flexbox, Tailwind CSS, JavaScript, JSON, Next.js), Spring Boot on the back end with MyBatis, REST web services and Spring Security, and data modeling with PostgreSQL and SQL — plus Git and UI/UX.",
   },
 ];

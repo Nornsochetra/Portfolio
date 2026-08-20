@@ -54,12 +54,20 @@ export function Nav() {
         "fixed inset-x-0 top-0 z-50 transition-all duration-300 " + (scrolled ? "py-3" : "py-5")
       }
     >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div
+        aria-hidden
+        className={
+          "nav-scrim pointer-events-none absolute inset-x-0 top-0 h-full transition-opacity duration-300 " +
+          (scrolled ? "opacity-100" : "opacity-0")
+        }
+      />
+
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
         <div
           className={
             "flex items-center justify-between rounded-2xl border pb-2 pl-3 pr-2 pt-2 transition-all duration-300 sm:rounded-full sm:pl-4 sm:pr-2.5 " +
             (scrolled
-              ? "glass border-slate-900/10 shadow-xl shadow-slate-900/10 dark:border-white/10 dark:shadow-black/30"
+              ? "glass-nav border-slate-900/10 shadow-xl shadow-slate-900/10 dark:border-white/10 dark:shadow-black/30"
               : "border-transparent bg-transparent")
           }
         >
@@ -73,7 +81,7 @@ export function Nav() {
             </span>
           </a>
 
-          <nav className="hidden items-center gap-1 rounded-full border border-slate-900/10 bg-slate-900/[0.03] p-1 dark:border-white/10 dark:bg-white/[0.03] md:flex">
+          <nav className="hidden items-center gap-1 rounded-full border border-slate-900/10 bg-slate-900/[0.03] p-1 dark:border-white/10 dark:bg-white/[0.03] lg:flex">
             {PORTFOLIO_CONFIG.nav.map((link) => (
               <a
                 key={link.id}
@@ -94,7 +102,7 @@ export function Nav() {
             <ThemeToggle />
             <a
               href="#contact"
-              className="group ml-1 hidden items-center gap-1.5 rounded-full bg-accent py-2 pl-4 pr-3 text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-accent-light hover:shadow-lg hover:shadow-accent/40 active:scale-95 md:inline-flex"
+              className="group ml-1 hidden items-center gap-1.5 rounded-full bg-accent py-2 pl-4 pr-3 text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-accent-light hover:shadow-lg hover:shadow-accent/40 active:scale-95 lg:inline-flex"
             >
               Let&apos;s talk
               <ArrowUpRight
@@ -103,7 +111,7 @@ export function Nav() {
               />
             </a>
             <button
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-700 transition-all duration-200 hover:bg-slate-900/10 active:scale-90 dark:text-slate-200 dark:hover:bg-white/10 md:hidden"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-700 transition-all duration-200 hover:bg-slate-900/10 active:scale-90 dark:text-slate-200 dark:hover:bg-white/10 lg:hidden"
               onClick={() => setOpen(!open)}
               aria-label="Toggle menu"
               aria-expanded={open}
@@ -119,7 +127,7 @@ export function Nav() {
 
         <div
           className={
-            "overflow-hidden transition-all duration-300 ease-out md:hidden " +
+            "overflow-hidden transition-all duration-300 ease-out lg:hidden " +
             (open ? "mt-2 max-h-96 opacity-100" : "max-h-0 opacity-0")
           }
         >

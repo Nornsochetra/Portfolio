@@ -22,6 +22,7 @@ body {
   --glow-alpha: 0.22;
   --scrollbar-track: #f1f5f9;
   --scrollbar-thumb: #818cf8;
+  --surface: 255, 255, 255;
 }
 
 .dark {
@@ -31,16 +32,39 @@ body {
   --glow-alpha: 0.35;
   --scrollbar-track: #0b0b12;
   --scrollbar-thumb: #4338ca;
+  --surface: 11, 11, 18;
 }
 
 .glass {
   background: rgba(var(--ink), var(--glass-alpha));
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(var(--ink), var(--glass-border-alpha));
   transition:
     background-color 0.3s ease,
     border-color 0.3s ease;
+}
+
+/* Nav pill: a near-opaque frosted surface so page content genuinely
+   disappears behind it instead of staying legible through the glass.
+   Border colour is left to the Tailwind border-* utilities on the element. */
+.glass-nav {
+  background: rgba(var(--surface), 0.72);
+  backdrop-filter: blur(16px) saturate(140%);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Full-bleed scrim behind the floating pill: fades content out as it rises
+   into the header strip, covering the gap the pill itself doesn't span. */
+.nav-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--surface), 0.98) 0%,
+    rgba(var(--surface), 0.94) 62%,
+    rgba(var(--surface), 0.55) 82%,
+    rgba(var(--surface), 0) 100%
+  );
 }
 
 .glow {
